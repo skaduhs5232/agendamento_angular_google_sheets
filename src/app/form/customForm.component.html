@@ -1,0 +1,111 @@
+<form class="form" [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+    <!-- Loader overlay interno -->
+    @if (loadingSubmit()) {
+        <div class="form-overlay">
+            <div class="loader-container">
+                <app-loader [size]="60"></app-loader>
+                <p class="loading-text">Processando seu agendamento...</p>
+            </div>
+        </div>
+    }
+
+    <div class="titulo-instrucoes">
+        <p class="title">Agende sua consulta</p>
+        <p class="message">Preencha os campos abaixo com as suas informações.</p>
+    </div>
+    <!-- Primeira linha: Nome e Email lado a lado -->
+    <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-half">
+            <mat-label>Nome Completo</mat-label>
+            <input 
+                matInput 
+                formControlName="nome"
+                type="tex   t" 
+                placeholder="Digite seu nome completo"
+                required>
+            <mat-error *ngIf="formGroup.get('nome')?.hasError('required')">
+                Nome é obrigatório
+            </mat-error>
+            <mat-error *ngIf="formGroup.get('nome')?.hasError('minlength')">
+                Nome deve ter pelo menos 2 caracteres
+            </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="form-field-half">
+            <mat-label>Email</mat-label>
+            <input 
+                matInput 
+                formControlName="email"
+                type="email" 
+                placeholder="seu@email.com"
+                required>
+            <mat-error *ngIf="formGroup.get('email')?.hasError('required')">
+                Email é obrigatório
+            </mat-error>
+            <mat-error *ngIf="formGroup.get('email')?.hasError('email')">
+                Digite um email válido
+            </mat-error>
+        </mat-form-field>
+    </div>
+    
+    <!-- Segunda linha: Psicólogo ocupando toda a largura -->
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Psicólogo</mat-label>
+        <mat-select formControlName="psicologo" required>
+            @for (psi of planilhasPsicologos; track psi.nome) {
+                <mat-option [value]="psi.nome">{{ psi.nome }}</mat-option>
+            }
+        </mat-select>
+        <mat-error *ngIf="formGroup.get('psicologo')?.hasError('required')">
+            Selecione um psicólogo
+        </mat-error>
+    </mat-form-field>
+    
+    <!-- Terceira linha: Data e Horário lado a lado -->
+    <div class="form-row">
+        <mat-form-field appearance="outline" class="form-field-half">
+            <mat-label>Data da Consulta</mat-label>
+            <input 
+                matInput 
+                formControlName="data"
+                [matDatepicker]="picker"
+                [min]="minDate"
+                placeholder="Selecione uma data"
+                readonly
+                required>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-error *ngIf="formGroup.get('data')?.hasError('required')">
+                Selecione uma data
+            </mat-error>
+            <mat-error *ngIf="formGroup.get('data')?.hasError('matDatepickerMin')">
+                Selecione uma data futura
+            </mat-error>
+        </mat-form-field>
+        
+        <mat-form-field appearance="outline" class="form-field-half">
+            <mat-label>Horário</mat-label>
+            <mat-select formControlName="hora" required>
+                @if (horariosCarregando()) {
+                    <mat-option disabled>Carregando horários...</mat-option>
+                } @else {
+                    @for (horario of horariosDisponiveis; track horario) {
+                        <mat-option [value]="horario">{{ horario }}</mat-option>
+                    }
+                }
+            </mat-select>
+            <mat-error *ngIf="formGroup.get('hora')?.hasError('required')">
+                Selecione um horário
+            </mat-error>
+        </mat-form-field>
+    </div>
+    
+    <button 
+        mat-raised-button
+        color="primary"
+        type="submit" 
+        class="submit-button"
+        [disabled]="formGroup.invalid || loadingSubmit()">
+        {{ loadingSubmit() ? 'Enviando...' : 'Agendar Consulta' }}
+    </button>
+</form>
