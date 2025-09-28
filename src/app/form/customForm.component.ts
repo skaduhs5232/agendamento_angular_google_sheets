@@ -62,7 +62,7 @@ export class CustomFormComponent implements OnInit {
             const profissionalSelecionado = this.planilhasPsicologos.find((x) => x.nome === value);
             if (profissionalSelecionado) {
                 this.scriptURL = profissionalSelecionado.url;
-                const dataSelecionada = this.formGroup.get('data')?.value;
+                const dataSelecionada = this.formGroup.get('data')?.value as Date;
                 if (dataSelecionada) {
                     this.habilitarHora(true);
                     this.obterHorarios(this.scriptURL, dataSelecionada);
@@ -73,7 +73,7 @@ export class CustomFormComponent implements OnInit {
             }
         });
 
-        this.formGroup.get('data')?.valueChanges.subscribe((dataSelecionada) => {
+        this.formGroup.get('data')?.valueChanges.subscribe((dataSelecionada: Date) => {
             const psicologoSelecionado = this.formGroup.get('psicologo')?.value;
             if (psicologoSelecionado && dataSelecionada && this.scriptURL) {
                 this.habilitarHora(true);
@@ -119,19 +119,23 @@ export class CustomFormComponent implements OnInit {
         return horarios;
     }
 
-    private converterDataParaISO(data: string) {
-        const [dia, mes, ano] = data.split('/');
-        return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    private converterDataParaDDMMYYYY(date: Date): string {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
     }
 
-    private obterHorarios(scriptURL: string, dataSelecionada: string) {
+    private obterHorarios(scriptURL: string, dataSelecionada: Date) {
         this.horariosCarregando.set(true);
         this.horariosDisponiveis = [];
+        
+        const dataFormatada = this.converterDataParaDDMMYYYY(dataSelecionada);
         
         this.http.get<{ horarios: Array<{ data: string; hora: string }> }>(scriptURL).subscribe({
             next: (data) => {
                 const horariosOcupados = (data?.horarios || [])
-                    .filter((h) => this.converterDataParaISO(h.data) === dataSelecionada)
+                    .filter((h) => h.data === dataFormatada)
                     .map((h) => h.hora);
 
                 const todos = this.gerarHorariosDisponiveis();
@@ -186,7 +190,8 @@ export class CustomFormComponent implements OnInit {
         const nome = this.capitalizeFirstLetter(this.formGroup.value.nome || '');
         const psicologo = this.capitalizeFirstLetter(this.formGroup.value.psicologo || '');
         const email = (this.formGroup.value.email || '').trim();
-        const data = this.formGroup.value.data;
+        const dataValue = this.formGroup.value.data as Date;
+        const data = dataValue ? this.converterDataParaDDMMYYYY(dataValue) : '';
         const hora = this.formGroup.value.hora || '';
 
         const fd = new FormData();
