@@ -1,5 +1,6 @@
-// Importa o tema do Angular Material primeiro
+// Importa o tema do Angular Material e ngx-toastr primeiro
 @use '@angular/material' as mat;
+@use 'ngx-toastr/toastr';
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
@@ -55,9 +56,6 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-// Importa os estilos do ngx-toastr
-@import 'ngx-toastr/toastr';
 
 // Personalizações do toastr para combinar com o tema
 .toast-container {
